@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/name: syn-csi-hetznercloud
+    name: syn-csi-hetznercloud
+    pod-security.kubernetes.io/enforce: privileged
+  name: syn-csi-hetznercloud

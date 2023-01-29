@@ -1,3 +1,13 @@
-# Overwrite parameters here
+applications:
+  - storageclass
 
-# parameters: {...}
+parameters:
+  kapitan:
+    dependencies:
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-storageclass/v1.0.0/lib/storageclass.libsonnet
+        output_path: vendor/lib/storageclass.libsonnet
+
+  storageclass:
+    defaults: {}
+    defaultClass: ""

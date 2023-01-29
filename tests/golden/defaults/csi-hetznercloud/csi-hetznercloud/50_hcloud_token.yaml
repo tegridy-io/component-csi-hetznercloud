@@ -1,0 +1,11 @@
+apiVersion: v1
+data: {}
+kind: Secret
+metadata:
+  annotations: {}
+  labels:
+    name: hcloud-token
+  name: hcloud-token
+stringData:
+  token: insertCoin
+type: Opaque
