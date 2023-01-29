@@ -1,0 +1,18 @@
+{
+  "extends": [
+    "config:base",
+    ":gitSignOff",
+    ":disableDependencyDashboard"
+  ],
+  "postUpgradeTasks": {
+    "commands": [
+      "make gen-golden-all"
+    ],
+    "fileFilters": [ "tests/golden/**" ],
+    "executionMode": "update"
+  },
+  "suppressNotifications": [ "artifactErrors" ],
+  "labels": [
+    "dependency"
+  ]
+}

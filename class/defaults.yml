@@ -1,0 +1,4 @@
+parameters:
+  csi_hetznercloud:
+    =_metadata: {}
+    namespace: syn-csi-hetznercloud

@@ -1,0 +1,25 @@
+{
+  "template": "https://github.com/projectsyn/commodore-component-template.git",
+  "commit": "2e09191ab5f2b26f2098a1215594b561c6a59d97",
+  "checkout": "main",
+  "context": {
+    "cookiecutter": {
+      "name": "CSI Hetznercloud",
+      "slug": "csi-hetznercloud",
+      "parameter_key": "csi_hetznercloud",
+      "test_cases": "defaults",
+      "add_lib": "n",
+      "add_pp": "n",
+      "add_golden": "y",
+      "add_matrix": "y",
+      "add_go_unit": "n",
+      "copyright_holder": "VSHN AG <info@vshn.ch>",
+      "copyright_year": "2023",
+      "github_owner": "tegridy-io",
+      "github_name": "component-csi-hetznercloud",
+      "github_url": "https://github.com/tegridy-io/component-csi-hetznercloud",
+      "_template": "https://github.com/projectsyn/commodore-component-template.git"
+    }
+  },
+  "directory": null
+}
