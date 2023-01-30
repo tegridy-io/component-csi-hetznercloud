@@ -1,0 +1,312 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  labels:
+    name: hcloud-csi-controller
+  name: hcloud-csi-controller
+spec:
+  minReadySeconds: 30
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: hcloud-csi-controller
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations: {}
+      labels:
+        name: hcloud-csi-controller
+    spec:
+      containers:
+        - args: []
+          command:
+            - /bin/hcloud-csi-driver-controller
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///run/csi/socket
+            - name: ENABLE_METRICS
+              value: 'true'
+            - name: HCLOUD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: token
+                  name: hcloud-token
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: METRICS_ENDPOINT
+              value: 0.0.0.0:9189
+          image: docker.io/hetznercloud/hcloud-csi-driver:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 10
+            periodSeconds: 2
+            timeoutSeconds: 3
+          name: hcloud-csi-driver
+          ports:
+            - containerPort: 9808
+              name: healthz
+            - containerPort: 9189
+              name: metrics
+          resources: {}
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /run/csi
+              name: socket-dir
+        - args:
+            - --default-fstype=ext4
+          env: []
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.1.0
+          imagePullPolicy: IfNotPresent
+          name: csi-attacher
+          ports: []
+          resources: {}
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /run/csi
+              name: socket-dir
+        - args: []
+          env: []
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.9.0
+          imagePullPolicy: IfNotPresent
+          name: liveness-probe
+          ports: []
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /run/csi
+              name: socket-dir
+        - args:
+            - --feature-gates=Topology=true
+            - --default-fstype=ext4
+          env: []
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.4.0
+          imagePullPolicy: IfNotPresent
+          name: csi-provisioner
+          ports: []
+          resources: {}
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /run/csi
+              name: socket-dir
+        - args: []
+          env: []
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.7.0
+          imagePullPolicy: IfNotPresent
+          name: csi-resizer
+          ports: []
+          resources: {}
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /run/csi
+              name: socket-dir
+      imagePullSecrets: []
+      initContainers: []
+      serviceAccountName: hcloud-csi-controller
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: socket-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {}
+  labels:
+    name: hcloud-csi-controller
+  name: hcloud-csi-controller
+spec:
+  ports:
+    - name: healthz
+      port: 9808
+      targetPort: 9808
+  selector:
+    name: hcloud-csi-controller
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations: {}
+  labels:
+    name: hcloud-csi-controller
+  name: hcloud-csi-controller
+  namespace: syn-csi-hetznercloud
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations: {}
+  labels:
+    name: hcloud-csi-controller
+  name: hcloud-csi-controller
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - '*'
+  - nonResourceURLs:
+      - '*'
+    verbs:
+      - '*'
+  - apiGroups:
+      - ''
+    resources:
+      - persistentvolumes
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+  - apiGroups:
+      - ''
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - csi.storage.k8s.io
+    resources:
+      - csinodeinfos
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - csinodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - volumeattachments
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - volumeattachments/status
+    verbs:
+      - patch
+  - apiGroups:
+      - ''
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ''
+    resources:
+      - persistentvolumes
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+  - apiGroups:
+      - ''
+    resources:
+      - persistentvolumeclaims
+      - persistentvolumeclaims/status
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - storageclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - events
+    verbs:
+      - list, watch, create, update, patch
+  - apiGroups:
+      - snapshot.storage.k8s.io
+    resources:
+      - volumesnapshots
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - snapshot.storage.k8s.io
+    resources:
+      - volumesnapshotcontents
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ''
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - events
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations: {}
+  labels:
+    name: hcloud-csi-controller
+  name: hcloud-csi-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hcloud-csi-controller
+subjects:
+  - kind: ServiceAccount
+    name: hcloud-csi-controller
+    namespace: syn-csi-hetznercloud

@@ -10,10 +10,20 @@ default:: `syn-csi-hetznercloud`
 
 The namespace in which to deploy this component.
 
+== `hcloudToken`
+
+[horizontal]
+type:: string
+default:: `insertCoin`
+
+The token to access the hetzner cloud api.
+
+See https://docs.hetzner.com/de/cloud/api/getting-started/generating-api-token/[Hetzner Documentation] on how to create a token.
 
 == Example
 
 [source,yaml]
 ----
-namespace: example-namespace
+csi_hetznercloud:
+  hcloudToken: my-project-token
 ----
