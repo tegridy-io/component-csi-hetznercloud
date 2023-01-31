@@ -45,8 +45,8 @@ spec:
                   fieldPath: spec.nodeName
             - name: METRICS_ENDPOINT
               value: 0.0.0.0:9189
-          image: docker.io/hetznercloud/hcloud-csi-driver:latest
-          imagePullPolicy: Always
+          image: docker.io/hetznercloud/hcloud-csi-driver:2.1.1
+          imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 5
             httpGet:
