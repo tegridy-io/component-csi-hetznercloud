@@ -21,6 +21,18 @@ local namespace = kube.Namespace(params.namespace) {
 };
 
 
+// Helpers
+
+local Container(name, dir) = kube.Container(name) {
+  local paramKey = std.strReplace(name, '-', '_'),
+  image: '%(registry)s/%(repository)s:%(tag)s' % std.get(params.images, paramKey),
+  resources: std.get(params.resources, paramKey),
+  volumeMounts_:: {
+    [dir]: { mountPath: '/run/csi' },
+  },
+};
+
+
 // CSI Controller
 
 local controlerName = 'hcloud-csi-controller';
@@ -77,37 +89,7 @@ local controller = kube.Deployment(controlerName) {
       spec+: {
         serviceAccountName: controlerName,
         containers_:: {
-          attacher: kube.Container('csi-attacher') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.csi_attacher,
-            resources: params.resources.csi_attacher,
-            args: [
-              '--default-fstype=ext4',
-            ],
-            volumeMounts_:: {
-              'socket-dir': { mountPath: '/run/csi' },
-            },
-          },
-          resizer: kube.Container('csi-resizer') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.csi_resizer,
-            resources: params.resources.csi_resizer,
-            volumeMounts_:: {
-              'socket-dir': { mountPath: '/run/csi' },
-            },
-          },
-          provisioner: kube.Container('csi-provisioner') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.csi_provisioner,
-            resources: params.resources.csi_provisioner,
-            args: [
-              '--feature-gates=Topology=true',
-              '--default-fstype=ext4',
-            ],
-            volumeMounts_:: {
-              'socket-dir': { mountPath: '/run/csi' },
-            },
-          },
-          default: kube.Container('hcloud-csi-driver') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.hcloud_csi_driver,
-            resources: params.resources.hcloud_csi_driver,
+          default: Container('hcloud-csi-driver', 'socket-dir') {
             env_:: {
               CSI_ENDPOINT: 'unix:///run/csi/socket',
               METRICS_ENDPOINT: '0.0.0.0:9189',
@@ -130,16 +112,20 @@ local controller = kube.Deployment(controlerName) {
               timeoutSeconds: 3,
               periodSeconds: 2,
             },
-            volumeMounts_:: {
-              'socket-dir': { mountPath: '/run/csi' },
-            },
           },
-          probe: kube.Container('liveness-probe') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.liveness_probe,
-            volumeMounts_:: {
-              'socket-dir': { mountPath: '/run/csi' },
-            },
+          attacher: Container('csi-attacher', 'socket-dir') {
+            args: [
+              '--default-fstype=ext4',
+            ],
           },
+          provisioner: Container('csi-provisioner', 'socket-dir') {
+            args: [
+              '--feature-gates=Topology=true',
+              '--default-fstype=ext4',
+            ],
+          },
+          resizer: Container('csi-resizer', 'socket-dir'),
+          probe: Container('liveness-probe', 'socket-dir'),
         },
         volumes_:: {
           'socket-dir': kube.EmptyDirVolume(),
@@ -182,20 +168,7 @@ local csiNode = kube.DaemonSet('hcloud-csi-node') {
           },
         },
         containers_:: {
-          registrar: kube.Container('csi-node-driver-registrar') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.csi_registrar,
-            resources: params.resources.csi_attacher,
-            args: [
-              '--kubelet-registration-path=/var/lib/kubelet/plugins/csi.hetzner.cloud/socket',
-            ],
-            volumeMounts_:: {
-              'plugin-dir': { mountPath: '/run/csi' },
-              'registration-dir': { mountPath: '/registration' },
-            },
-          },
-          default: kube.Container('hcloud-csi-driver') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.hcloud_csi_driver,
-            resources: params.resources.hcloud_csi_driver,
+          default: Container('hcloud-csi-driver', 'plugin-dir') {
             env_:: {
               CSI_ENDPOINT: 'unix:///run/csi/socket',
               METRICS_ENDPOINT: '0.0.0.0:9189',
@@ -219,18 +192,20 @@ local csiNode = kube.DaemonSet('hcloud-csi-node') {
               timeoutSeconds: 3,
               periodSeconds: 2,
             },
-            volumeMounts_:: {
+            volumeMounts_+: {
               'kubelet-dir': { mountPath: '/var/lib/kubelet', mountPropagation: 'Bidirectional' },
-              'plugin-dir': { mountPath: '/run/csi' },
               'device-dir': { mountPath: '/dev' },
             },
           },
-          probe: kube.Container('liveness-probe') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.liveness_probe,
-            volumeMounts_:: {
-              'plugin-dir': { mountPath: '/run/csi' },
+          registrar: Container('csi-registrar', 'plugin-dir') {
+            args: [
+              '--kubelet-registration-path=/var/lib/kubelet/plugins/csi.hetzner.cloud/socket',
+            ],
+            volumeMounts_+: {
+              'registration-dir': { mountPath: '/registration' },
             },
           },
+          probe: Container('liveness-probe', 'plugin-dir'),
         },
         volumes_:: {
           'kubelet-dir': { hostPath: { path: '/var/lib/kubelet', type: 'Directory' } },

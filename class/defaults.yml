@@ -30,9 +30,11 @@ parameters:
         tag: v2.9.0
 
     resources:
+      hcloud_csi_driver: {}
       csi_attacher: {}
       csi_resizer: {}
       csi_provisioner: {}
-      hcloud_csi_driver: {}
+      csi_registrar: {}
+      liveness_probe: {}
 
     hcloudToken: insertCoin

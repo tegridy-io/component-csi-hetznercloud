@@ -85,6 +85,7 @@ spec:
           imagePullPolicy: IfNotPresent
           name: liveness-probe
           ports: []
+          resources: {}
           stdin: false
           tty: false
           volumeMounts:

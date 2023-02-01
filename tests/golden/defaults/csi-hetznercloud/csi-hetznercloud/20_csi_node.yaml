@@ -80,6 +80,7 @@ spec:
           imagePullPolicy: IfNotPresent
           name: liveness-probe
           ports: []
+          resources: {}
           stdin: false
           tty: false
           volumeMounts:
@@ -90,7 +91,7 @@ spec:
           env: []
           image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.7.0
           imagePullPolicy: IfNotPresent
-          name: csi-node-driver-registrar
+          name: csi-registrar
           ports: []
           resources: {}
           stdin: false
