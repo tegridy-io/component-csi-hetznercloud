@@ -249,8 +249,11 @@ local storageClass = sc.storageClass('hcloud-volumes') {
 // Define outputs below
 {
   '00_namespace': namespace,
-  '10_controller': [ controller, controllerService, controlerServiceAccount, controlerClusterRole, controlerClusterRoleBinding ],
-  '20_csi_node': [ csiNode, csiNodeService ],
+  '10_controller_deploy': controller,
+  '10_controller_service': controllerService,
+  '10_controller_rbac': [ controlerServiceAccount, controlerClusterRole, controlerClusterRoleBinding ],
+  '20_node_deploy': csiNode,
+  '20_node_service': csiNodeService,
   '30_csi_driver': csiDriver,
   '40_storage_class': storageClass,
   '50_hcloud_token': hcloudToken,

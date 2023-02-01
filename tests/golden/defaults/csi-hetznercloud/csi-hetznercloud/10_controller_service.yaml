@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {}
+  labels:
+    name: hcloud-csi-controller
+  name: hcloud-csi-controller
+spec:
+  ports:
+    - name: healthz
+      port: 9808
+      targetPort: 9808
+  selector:
+    name: hcloud-csi-controller
+  sessionAffinity: None
+  type: ClusterIP
