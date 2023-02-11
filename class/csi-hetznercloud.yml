@@ -9,3 +9,16 @@ parameters:
           - ${_base_directory}/component/main.jsonnet
         input_type: jsonnet
         output_path: csi-hetznercloud/
+      # kustomize
+      - input_paths:
+          - ${_base_directory}/component/csi-driver.jsonnet
+        input_type: jsonnet
+        output_path: ${_base_directory}/manifests/csi-driver
+      - input_paths:
+          - ${_kustomize_wrapper}
+        input_type: external
+        output_path: .
+        env_vars:
+          INPUT_DIR: ${_base_directory}/manifests/csi-driver
+        args:
+          - \${compiled_target_dir}/${_instance}/10_kustomize/csi-driver

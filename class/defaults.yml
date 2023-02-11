@@ -3,8 +3,12 @@ parameters:
     =_metadata: {}
     namespace: syn-csi-hetznercloud
 
+    manifestVersion: v2.1.1
+    kustomizeInput:
+      namespace: ${csi_hetznercloud:namespace}
+
     images:
-      hcloud_csi_driver:
+      csi_driver:
         registry: docker.io
         repository: hetznercloud/hcloud-csi-driver
         tag: '2.1.1'
@@ -28,11 +32,5 @@ parameters:
         registry: registry.k8s.io
         repository: sig-storage/livenessprobe
         tag: v2.9.0
-
-    resources:
-      csi_attacher: {}
-      csi_resizer: {}
-      csi_provisioner: {}
-      hcloud_csi_driver: {}
 
     hcloudToken: insertCoin
