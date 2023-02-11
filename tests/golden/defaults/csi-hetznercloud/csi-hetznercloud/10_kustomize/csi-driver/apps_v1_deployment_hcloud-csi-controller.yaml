@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hcloud-csi-controller
+  namespace: syn-csi-hetznercloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hcloud-csi-controller
+  template:
+    metadata:
+      labels:
+        app: hcloud-csi-controller
+    spec:
+      containers:
+      - args:
+        - --default-fstype=ext4
+        image: registry.k8s.io/sig-storage/csi-attacher:v4.1.0
+        name: csi-attacher
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      - image: registry.k8s.io/sig-storage/csi-resizer:v1.7.0
+        name: csi-resizer
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      - args:
+        - --feature-gates=Topology=true
+        - --default-fstype=ext4
+        image: registry.k8s.io/sig-storage/csi-provisioner:v3.4.0
+        name: csi-provisioner
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      - command:
+        - /bin/hcloud-csi-driver-controller
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///run/csi/socket
+        - name: METRICS_ENDPOINT
+          value: 0.0.0.0:9189
+        - name: ENABLE_METRICS
+          value: "true"
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: HCLOUD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: hcloud
+        image: docker.io/hetznercloud/hcloud-csi-driver:2.1.1
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          timeoutSeconds: 3
+        name: hcloud-csi-driver
+        ports:
+        - containerPort: 9189
+          name: metrics
+        - containerPort: 9808
+          name: healthz
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      - image: registry.k8s.io/sig-storage/livenessprobe:v2.9.0
+        imagePullPolicy: Always
+        name: liveness-probe
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      serviceAccountName: hcloud-csi-controller
+      volumes:
+      - emptyDir: {}
+        name: socket-dir

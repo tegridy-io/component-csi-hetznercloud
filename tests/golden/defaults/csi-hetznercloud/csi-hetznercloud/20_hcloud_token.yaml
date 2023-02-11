@@ -4,8 +4,8 @@ kind: Secret
 metadata:
   annotations: {}
   labels:
-    name: hcloud-token
-  name: hcloud-token
+    name: hcloud
+  name: hcloud
 stringData:
   token: insertCoin
 type: Opaque
