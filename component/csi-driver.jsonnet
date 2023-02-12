@@ -35,7 +35,23 @@ local csiDriver = com.Kustomization(
       newName: '%(registry)s/%(repository)s' % params.images.liveness_probe,
     },
   },
-  params.kustomizeInput,
-);
+  {
+    patchesStrategicMerge: [
+      'rm-storageclass.yaml',
+    ],
+  } + com.makeMergeable(params.kustomizeInput),
+) {
+  'rm-storageclass': {
+    '$patch': 'delete',
+    apiVersion: 'storage.k8s.io/v1',
+    kind: 'StorageClass',
+    metadata: {
+      annotations: {
+        'storageclass.kubernetes.io/is-default-class': 'true',
+      },
+      name: 'hcloud-volumes',
+    },
+  },
+};
 
 csiDriver
