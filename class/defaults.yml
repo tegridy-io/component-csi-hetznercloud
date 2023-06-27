@@ -3,7 +3,7 @@ parameters:
     =_metadata: {}
     namespace: syn-csi-hetznercloud
 
-    manifestVersion: v2.1.1
+    manifestVersion: v2.3.2
     kustomizeInput:
       namespace: ${csi_hetznercloud:namespace}
 
@@ -11,7 +11,7 @@ parameters:
       csi_driver:
         registry: docker.io
         repository: hetznercloud/hcloud-csi-driver
-        tag: '2.1.1'
+        tag: v2.3.2
       csi_attacher:
         registry: registry.k8s.io
         repository: sig-storage/csi-attacher
