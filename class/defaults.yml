@@ -23,7 +23,7 @@ parameters:
       csi_provisioner:
         registry: registry.k8s.io
         repository: sig-storage/csi-provisioner
-        tag: v3.4.0
+        tag: v4.0.0
       csi_registrar:
         registry: registry.k8s.io
         repository: sig-storage/csi-node-driver-registrar
