@@ -31,6 +31,6 @@ parameters:
       liveness_probe:
         registry: registry.k8s.io
         repository: sig-storage/livenessprobe
-        tag: v2.12.0
+        tag: v2.13.1
 
     hcloudToken: insertCoin
