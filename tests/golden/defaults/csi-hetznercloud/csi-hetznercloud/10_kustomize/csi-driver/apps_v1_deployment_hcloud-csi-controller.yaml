@@ -53,7 +53,7 @@ spec:
             secretKeyRef:
               key: token
               name: hcloud
-        image: docker.io/hetznercloud/hcloud-csi-driver:v2.13.0
+        image: docker.io/hetznercloud/hcloud-csi-driver:v2.18.0
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 5
