@@ -12,7 +12,7 @@ parameters:
       csi_driver:
         registry: docker.io
         repository: hetznercloud/hcloud-csi-driver
-        tag: v2.13.0
+        tag: v2.20.0
       csi_attacher:
         registry: registry.k8s.io
         repository: sig-storage/csi-attacher
