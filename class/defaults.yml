@@ -1,6 +1,7 @@
 parameters:
   csi_hetznercloud:
-    =_metadata: {}
+    =_metadata:
+      multi_tenant: true
     namespace: syn-csi-hetznercloud
 
     manifestVersion: v2.3.2
