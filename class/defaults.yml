@@ -20,7 +20,7 @@ parameters:
       csi_resizer:
         registry: registry.k8s.io
         repository: sig-storage/csi-resizer
-        tag: v2.1.0
+        tag: v2.2.1
       csi_provisioner:
         registry: registry.k8s.io
         repository: sig-storage/csi-provisioner
